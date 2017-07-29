@@ -23,14 +23,3 @@ $(function() {
 
   $('.mainview > *:not(.selected)').css('display', 'none');
 });
-
-
-document.addEventListener('DOMContentLoaded',
-  function () {
-    $('[data-i18n-content]').each(function() {
-       var message = chrome.i18n.getMessage(
-         this.getAttribute('data-i18n-content'));
-       if (message)
-         $(this).html(message);
-    });
-});
