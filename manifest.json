@@ -3,27 +3,30 @@
     "name": "Commentator",
     "version": "1.0.0",
 
-    "default_locale" : "en",
     "description": "Commentator chrome extension",
-    "icons": {
-        "128": "images/сomment.png",
-        "48":  "images/сomment48.png",
-        "16":  "images/сomment16.png"
-    },
+    // "icons": {
+    //     "128": "images/сomment.png",
+    //     "48":  "images/сomment48.png",
+    //     "16":  "images/сomment16.png"
+    // },
     "background": {
-        "scripts": ["background.js"],
+        "scripts": [
+            "lib/facebook-sdk.js",
+            "lib/instagram.js",
+            "lib/facebook.js",
+            "background.js"
+        ],
         "persistent": false
     },
     "permissions": [
         "unlimitedStorage",
         "storage",
         "<all_urls>",
-        "webRequest",
-        "webRequestBlocking"
+        "tabs"
     ],
     "options_page": "options.html",
     "browser_action": {
         "default_icon": "images/comment-off.png",
         "default_title": "Commentator extension"
-    },
+    }
 }
