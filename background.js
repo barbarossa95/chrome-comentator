@@ -1,8 +1,12 @@
-
 function setCommentatorIcon() {
+    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     var icon = {
-        path: "images/comment.png",
+        path: "images/comment-off.png",
     };
+    if (commentatorSettings['isActive']) {
+        icon["path"]="images/comment.png";
+    }
+    chrome.browserAction.setIcon(icon);
 }
 
 function gotoPage(url) {
@@ -16,12 +20,16 @@ function gotoPage(url) {
             }
         }
         chrome.tabs.getSelected(null, function(tab) {
-            chrome.tabs.create({url: url,index: tab.index + 1});
+            chrome.tabs.create({
+                url     : fulurl,
+                index   : tab.index + 1
+            });
         });
     });
 }
 
 var commentatorSettings = {
+    'isActive'          : false,
     'targets'           : '',
     'botToken'          : '',
     'botId'             : '',
@@ -31,37 +39,25 @@ var commentatorSettings = {
 
 function getComments() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-    var pages = commentatorSettings.targets.split('/\r|\n/');
+    var pages = commentatorSettings.targets.split('\n');
     for (var i = pages.length - 1; i >= 0; i--) {
-        console.log('currnet page - '  + pages[i]);
-        
-        var req = new XMLHttpRequest();
-        var url = pages[i];
-        req.open('GET', url, true);
-        req.onreadystatechange = processResponse;
-        req.send(null);
-
-        function processResponse() {
-            if (req.readyState == 4 && req.status == 200) {
-                if (page.search('/(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)/igm') != -1) {
-                    parseInstagramm(page);
-                }
-                if (page.search() != -1) {
-                    parseFacebook(page);    
-                }
-            } else {
-                console.log('error on request: ' + req.responseText);
-            }
+        if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
+            parseFacebook(pages[i]);
+            return;
+        }
+        if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
+            parseInstagramm(pages[i]);
+            return;
         }
     }
 }
 
-function parseInstagramm(responseText) {
-    //todo
+function parseInstagramm(url) {
+    InstagramParser(url);
 }
 
-function parseFacebook(responseText) {
-    //todo
+function parseFacebook(url) {
+    FacebookParser(url);
 }
 
 chrome.runtime.onInstalled.addListener(function(details){
@@ -78,7 +74,18 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 chrome.storage.sync.get('commentatorSettings', function(val) {
     if (typeof val.commentatorSettings !== "undefined") {
         localStorage.commentatorSettings = val.commentatorSettings;
+    } else {
+        //default settings
+        var commentatorSettings = {
+            'targets'           : '',
+            'botToken'          : '',
+            'botId'             : '',
+            'interval'          : 1,
+            'messageTemplate'   : ''
+        };
+        localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
     }
+
 });
 
 //set icon
@@ -88,8 +95,10 @@ getUpdates();
 
 //get extension interval setting and run update callback on timeout
 function getUpdates() {
-    getComments();
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
+    if (commentatorSettings['isActive']) {
+        getComments();
+    }
     var interval = 1000 * 60 * commentatorSettings.interval;
     setTimeout(getUpdates, interval);
 }
