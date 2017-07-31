@@ -35,40 +35,25 @@ function gotoPage(url) {
     });
 }
 
-var commentatorSettings = {
-    'isActive'          : false,
-    'targets'           : '',
-    'botToken'          : '',
-    'botId'             : '',
-    'interval'          : '',
-    'messageTemplate'   : ''
-};
-
 function getComments() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     var pages = commentatorSettings.targets.split('\n');
     for (var i = pages.length - 1; i >= 0; i--) {
         if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
-            parseFacebook(pages[i]);
+            var since = localStorage.facebookSyncDate;
+            FacebookParser(pages[i], since);
             return;
         }
         if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
-            parseInstagramm(pages[i]);
+            InstagramParser(pages[i]);
             return;
         }
     }
 }
 
-function parseInstagramm(url) {
-    InstagramParser(url);
-}
-
-function parseFacebook(url) {
-    new FacebookParser(url);
-}
-
 chrome.runtime.onInstalled.addListener(function(details){
-    localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
+    initStorage();
+    setCommentatorIcon();
     gotoPage('options.html');
 });
 
@@ -77,26 +62,15 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     gotoPage('options.html');
 });
 
-// sync extension settings from google cloud
+// sync extension settings since google cloud
 chrome.storage.sync.get('commentatorSettings', function(val) {
     if (typeof val.commentatorSettings !== "undefined") {
         localStorage.commentatorSettings = val.commentatorSettings;
     } else {
-        //default settings
-        var commentatorSettings = {
-            'targets'           : '',
-            'botToken'          : '',
-            'botId'             : '',
-            'interval'          : 1,
-            'messageTemplate'   : ''
-        };
-        localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
+        initStorage();
     }
-
 });
 
-//set icon
-setCommentatorIcon();
 // sync comments with local storage
 getUpdates();
 
@@ -110,3 +84,18 @@ function getUpdates() {
     setTimeout(getUpdates, interval);
 }
 
+function initStorage() {
+    var commentatorSettings = {
+            'isActive'          : true,
+            'targets'           : 'https://www.facebook.com/150029108903859/posts/110903252893547',
+            'botToken'          : '401718482:AAGabhE9Vaf3lqiAWT1DP4-8OcyAsOQNm40',
+            'botId'             : '@commentatorChannel',
+            'interval'          : 0.1,
+            'messageTemplate'   : 'test messageTemplate {{MESSAGE}}'
+    };
+    localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
+    localStorage.facebookSyncDate = '';
+    localStorage.facebookComments = JSON.stringify([{
+        name: 'facebook',
+    }]);
+}
