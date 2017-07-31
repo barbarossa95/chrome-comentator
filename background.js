@@ -1,3 +1,10 @@
+    FB.init({
+            appId            : '503342810008442',
+            autoLogAppEvents : true,
+            xfbml            : true,
+            version          : 'v2.10'
+        });
+
 function setCommentatorIcon() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     var icon = {
@@ -57,7 +64,7 @@ function parseInstagramm(url) {
 }
 
 function parseFacebook(url) {
-    FacebookParser(url);
+    new FacebookParser(url);
 }
 
 chrome.runtime.onInstalled.addListener(function(details){
