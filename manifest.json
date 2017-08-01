@@ -4,14 +4,11 @@
     "version": "1.0.0",
 
     "description": "Commentator chrome extension",
-    // "icons": {
-    //     "128": "images/сomment.png",
-    //     "48":  "images/сomment48.png",
-    //     "16":  "images/сomment16.png"
-    // },
+
     "background": {
         "scripts": [
             "lib/facebook-sdk.js",
+            "lib/helpers.js",
             "lib/instagram.js",
             "lib/facebook.js",
             "background.js"
