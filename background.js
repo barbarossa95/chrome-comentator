@@ -37,15 +37,25 @@ function gotoPage(url) {
 
 function getComments() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
+    var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
     var pages = commentatorSettings.targets.split('\n');
     for (var i = pages.length - 1; i >= 0; i--) {
-        if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
-            var since = localStorage.facebookSyncDate;
-            FacebookParser(pages[i], since);
+        var url = pages[i];
+        post = getPostFromStorage(url);
+        if (!post) {
+            post = {
+                id: 0,
+                url: url,
+                comments: null,
+                syncDate: null
+            }
+        }
+        if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
+            FacebookParser(post);
             return;
         }
-        if (pages[i].search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
-            InstagramParser(pages[i]);
+        if (url.search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
+            InstagramParser(post);
             return;
         }
     }
@@ -55,6 +65,8 @@ chrome.runtime.onInstalled.addListener(function(details){
     initStorage();
     setCommentatorIcon();
     gotoPage('options.html');
+    // sync comments with local storage
+    getUpdates();
 });
 
 //open options.html page on extension icon click
@@ -94,8 +106,27 @@ function initStorage() {
             'messageTemplate'   : 'test messageTemplate {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.facebookSyncDate = '';
-    localStorage.facebookComments = JSON.stringify([{
-        name: 'facebook',
-    }]);
+    localStorage.posts = '';
+}
+
+function getPostFromStorage(url) {
+    var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
+    var post = posts.find(function (post) {
+        return post.url == url;
+    });
+    return post ? post : null;
+}
+
+function savePostToStorage(post) {
+    var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
+    for (var i in posts) {
+        if (posts[i].url == post.url) {
+            posts[i] = post;
+            localStorage.posts = JSON.stringify(posts);
+            return; //Stop this loop, we found it!
+        }
+    }
+    posts.push(post);
+    localStorage.posts = JSON.stringify(posts);
+    return;
 }
