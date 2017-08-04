@@ -4,7 +4,7 @@ function loadCommentatorInfo() {
         // get current settings
         $('#targets').val(commentatorSettings['targets'] || "");
         $('#botToken').val(commentatorSettings['botToken'] || "");
-        $('#botId').val(commentatorSettings['botId'] || "");
+        $('#tgUserId').val(commentatorSettings['tgUserId'] || "");
         $('#interval').val(commentatorSettings['interval'] || "");
         $('#messageTemplate').val(commentatorSettings['messageTemplate'] || "");
     });
@@ -18,7 +18,7 @@ function save() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     commentatorSettings['targets'] = $('#targets').val() || "";
     commentatorSettings['botToken'] = $('#botToken').val() || "";
-    commentatorSettings['botId'] = $('#botId').val() || "";
+    commentatorSettings['tgUserId'] = $('#tgUserId').val() || "";
     commentatorSettings['interval'] = $('#interval').val() || "";
     commentatorSettings['messageTemplate'] = $('#messageTemplate').val() || "";
 
