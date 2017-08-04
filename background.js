@@ -35,33 +35,6 @@ function gotoPage(url) {
     });
 }
 
-function getComments() {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-    var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
-    var pages = commentatorSettings.targets.split('\n');
-    for (var i = pages.length - 1; i >= 0; i--) {
-        var url = pages[i];
-        post = getPostFromStorage(url);
-        if (!post) {
-            post = {
-                id: 0,
-                url: url,
-                comments: null,
-                syncDate: null
-            }
-        }
-        if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
-            FacebookParser(post);
-            continue;
-        }
-        if (url.search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
-            InstagramParser(post);
-            continue;
-        }
-    }
-    notifyByTelegram();
-}
-
 chrome.runtime.onInstalled.addListener(function(details){
     initStorage();
     setCommentatorIcon();
@@ -91,7 +64,32 @@ getUpdates();
 function getUpdates() {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     if (commentatorSettings['isActive']) {
-        getComments();
+        var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
+        var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
+        var pages = commentatorSettings.targets.split('\n');
+        for (var i = pages.length - 1; i >= 0; i--) {
+            var url = pages[i];
+            post = getPostFromStorage(url);
+            if (!post) {
+                post = {
+                    id: 0,
+                    url: url,
+                    comments: null,
+                    syncDate: null
+                }
+            }
+            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
+                FacebookParser(post);
+                continue;
+            }
+            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
+                InstagramParser(post);
+                continue;
+            }
+        }
+        setTimeout(function() {
+            notifyByTelegram();
+        }, 1000 * 30);
     }
     var interval = 1000 * 60 * commentatorSettings.interval;
     setTimeout(getUpdates, interval);
@@ -99,10 +97,10 @@ function getUpdates() {
 
 function initStorage() {
     var commentatorSettings = {
-            'isActive'          : false,
-            'targets'           : '',
-            'botToken'          : '',
-            'tgUserId'          : '',
+            'isActive'          : true,
+            'targets'           : 'https://www.instagram.com/p/BWpKvR7BDMB',
+            'botToken'          : '401718482:AAGabhE9Vaf3lqiAWT1DP4-8OcyAsOQNm40',
+            'tgUserId'          : '@commentatorChannel',
             'interval'          : 1,
             'messageTemplate'   : 'You have new comment: {{MESSAGE}}'
     };
