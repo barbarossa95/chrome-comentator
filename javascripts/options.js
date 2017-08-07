@@ -12,7 +12,7 @@ function loadCommentatorInfo() {
 }
 
 function save() {
-    localStorage.targets = $('#targets').html() || "";
+    localStorage.targets = $('#targets').val() || "";
     
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     commentatorSettings['botToken'] = $('#botToken').val() || "";
@@ -27,29 +27,7 @@ function save() {
         'posts'                 : localStorage.posts
     }, function() {});
 
-    var tgUser = getCommentatorSettings('tgUserId');
-    var botToken = getCommentatorSettings('botToken');
-    var query = "https:\/\/api.telegram.org/bot" 
-            + botToken + "/getUpdates";
-
-    var req = new XMLHttpRequest();
-    req.open('POST', query, true);
-    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-    req.onreadystatechange = function() {
-        req = event.target;
-        if (req.readyState == 4 && req.status == 200) {
-            var response = JSON.parse(req.responseText);
-            if (response.ok) {
-                response.result.forEach(function(update) {
-                    if(update.message.from.username == tgUser.substr(1)) {
-                        localStorage.chatId = update.message.chat.id;
-                        return;
-                    }
-                });
-            }
-        }
-    };
-    req.send();
+    getTelegramChatId();
 }
 
 
@@ -64,7 +42,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var targets = $('#targets').val();
         targets = $('#targets').val() || "";
         localStorage.targets = targets;
-
+        chrome.storage.sync.set({
+            'targets'                 : localStorage.targets
+    }, function() {});
     });
 
     $('#btn-save').click(function() {
@@ -78,38 +58,12 @@ document.addEventListener('DOMContentLoaded', function () {
         setCommentatorIcon(!isActive);
         $btnSwitch.html(isActive ? "Start" : "Stop");
         if (isActive) {
-            alert("Commentator stoped.");   
+            notify("Commentator", "Commentator stoped.");
+            resetCounter();            
         } else {
-            alert("Commentator started.");   
+            notify("Commentator", "Commentator started.");   
         }
     });
 });
-
-function editCommentatorSettings(key, value) {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-    commentatorSettings[key] = value;
-    localStorage.commentatorSettings = JSON.stringify(commentatorSettings);    
-    chrome.storage.sync.set({'commentatorSettings' : localStorage.commentatorSettings}, function() {});
-}
-
-function getCommentatorSettings(key) {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings) || "";
-    return commentatorSettings[key];
-}
-
-function setCommentatorIcon(isActive) {
-    var icon = {
-        path    : 'images/comment-off.png',
-    };
-    var title = {
-        title   : 'Commentator stoped'
-    };
-    if (isActive) {
-        icon["path"]="images/comment.png";
-        title['title'] = 'Commentator is running';
-    }
-    chrome.browserAction.setIcon(icon);
-    chrome.browserAction.setTitle(title);
-}
 
 loadCommentatorInfo();

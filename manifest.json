@@ -2,7 +2,6 @@
     "manifest_version": 2,
     "name": "Commentator",
     "version": "1.0.0",
-
     "description": "Commentator chrome extension",
 
     "background": {
@@ -18,6 +17,7 @@
     "content_security_policy": "script-src 'self' https://graph.facebook.com; object-src 'self'",
     "permissions": [
         "background",
+        "notifications",
         "unlimitedStorage",
         "storage",
         "<all_urls>",
