@@ -1,8 +1,9 @@
 function loadCommentatorInfo() {
     $(document).ready(function() {
+        var targets = localStorage.targets;
+        $('#targets').val(targets || "");
+
         var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-        // get current settings
-        $('#targets').val(commentatorSettings['targets'] || "");
         $('#botToken').val(commentatorSettings['botToken'] || "");
         $('#tgUserId').val(commentatorSettings['tgUserId'] || "");
         $('#interval').val(commentatorSettings['interval'] || "");
@@ -10,41 +11,56 @@ function loadCommentatorInfo() {
     });
 }
 
-/**
- * button id save click handler
- *
- */
 function save() {
+    var targets = $('#targets').val() || "";
+    localStorage.targets = targets;
+    
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-    commentatorSettings['targets'] = $('#targets').val() || "";
     commentatorSettings['botToken'] = $('#botToken').val() || "";
     commentatorSettings['tgUserId'] = $('#tgUserId').val() || "";
     commentatorSettings['interval'] = $('#interval').val() || "";
     commentatorSettings['messageTemplate'] = $('#messageTemplate').val() || "";
-
     var settings = JSON.stringify(commentatorSettings);
-
     localStorage.commentatorSettings = settings;
     // sync settings to google cloud
-    chrome.storage.sync.set({'commentatorSettings' : settings}, function() {});
+    chrome.storage.sync.set({
+        'commentatorSettings' : settings,
+        'targets' : targets
+    }, function() {});
 }
 
 
 document.addEventListener('DOMContentLoaded', function () {
+    var isActive = getCommentatorSettings('isActive');
+    
+    $btnSwitch = $('#btn-switch');
+
+    $btnSwitch.val(isActive ? "Stop" : "Start");
+
+    $('#targets').bind('input propertychange', function() {
+        var targets = $('#targets').val();
+        targets = $('#targets').val() || "";
+        localStorage.targets = targets;
+
+    });
+
     $('#btn-save').click(function() {
         save();
-        editCommentatorSettings('isActive', true);
-        setCommentatorIcon();
-        alert('The configuration has been saved! Commentator is running.');
+        alert('The configuration has been saved!');
     });
 
-    $('#btn-stop').click(function() {
-        editCommentatorSettings('isActive', false);
-        setCommentatorIcon();
-        alert("Commentator stoped.");   
+    $('#btn-switch').click(function() {
+        var isActive = getCommentatorSettings('isActive');
+        editCommentatorSettings('isActive', !isActive);
+        setCommentatorIcon(!isActive);
+        $btnSwitch.html(isActive ? "Start" : "Stop");
+        if (isActive) {
+            alert("Commentator stoped.");   
+        } else {
+            alert("Commentator started.");   
+        }
     });
 });
-
 
 function editCommentatorSettings(key, value) {
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
@@ -53,15 +69,19 @@ function editCommentatorSettings(key, value) {
     chrome.storage.sync.set({'commentatorSettings' : localStorage.commentatorSettings}, function() {});
 }
 
-function setCommentatorIcon() {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
+function getCommentatorSettings(key) {
+    var commentatorSettings = JSON.parse(localStorage.commentatorSettings) || "";
+    return commentatorSettings[key];
+}
+
+function setCommentatorIcon(isActive) {
     var icon = {
         path    : 'images/comment-off.png',
     };
     var title = {
         title   : 'Commentator stoped'
     };
-    if (commentatorSettings['isActive']) {
+    if (isActive) {
         icon["path"]="images/comment.png";
         title['title'] = 'Commentator is running';
     }
