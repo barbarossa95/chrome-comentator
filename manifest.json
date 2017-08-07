@@ -13,10 +13,11 @@
             "lib/facebook.js",
             "background.js"
         ],
-        "persistent": false
+        "persistent": true
     },
     "content_security_policy": "script-src 'self' https://graph.facebook.com; object-src 'self'",
     "permissions": [
+        "background",
         "unlimitedStorage",
         "storage",
         "<all_urls>",

@@ -12,21 +12,44 @@ function loadCommentatorInfo() {
 }
 
 function save() {
-    var targets = $('#targets').val() || "";
-    localStorage.targets = targets;
+    localStorage.targets = $('#targets').html() || "";
     
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     commentatorSettings['botToken'] = $('#botToken').val() || "";
     commentatorSettings['tgUserId'] = $('#tgUserId').val() || "";
     commentatorSettings['interval'] = $('#interval').val() || "";
     commentatorSettings['messageTemplate'] = $('#messageTemplate').val() || "";
-    var settings = JSON.stringify(commentatorSettings);
-    localStorage.commentatorSettings = settings;
+    localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
     // sync settings to google cloud
     chrome.storage.sync.set({
-        'commentatorSettings' : settings,
-        'targets' : targets
+        'commentatorSettings'   : localStorage.settings,
+        'targets'               : localStorage.targets,
+        'posts'                 : localStorage.posts
     }, function() {});
+
+    var tgUser = getCommentatorSettings('tgUserId');
+    var botToken = getCommentatorSettings('botToken');
+    var query = "https:\/\/api.telegram.org/bot" 
+            + botToken + "/getUpdates";
+
+    var req = new XMLHttpRequest();
+    req.open('POST', query, true);
+    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+    req.onreadystatechange = function() {
+        req = event.target;
+        if (req.readyState == 4 && req.status == 200) {
+            var response = JSON.parse(req.responseText);
+            if (response.ok) {
+                response.result.forEach(function(update) {
+                    if(update.message.from.username == tgUser.substr(1)) {
+                        localStorage.chatId = update.message.chat.id;
+                        return;
+                    }
+                });
+            }
+        }
+    };
+    req.send();
 }
 
 

@@ -6,7 +6,8 @@
         });
 
 function setCommentatorIcon() {
-    var isActive = JSON.parse(localStorage.commentatorSettings).isActive;
+    console.log('setCommentatorIcon');
+    var isActive = getCommentatorSettings('isActive');
     var icon = {
         path    : 'images/comment-off.png',
     };
@@ -41,10 +42,28 @@ function gotoPage(url) {
 }
 
 chrome.runtime.onInstalled.addListener(function(details){
+    console.log('onInstalled');
     initStorage();
     setCommentatorIcon();
-    gotoPage('options.html');
+});
+
+chrome.app.runtime.onLaunched.addListener(function() {
+    console.log('onStartup');
+    // sync extension settings since google cloud
+    chrome.storage.sync.get('commentatorSettings', function(val) {
+        if (typeof val.commentatorSettings !== "undefined" 
+            && typeof val.targets !== "undefined"
+            && typeof val.posts !== "undefined") {
+            localStorage.commentatorSettings = val.commentatorSettings;
+            localStorage.targets = val.targets;
+            localStorage.posts = val.posts;
+        } else {
+            initStorage();
+        }
+    });
+    setCommentatorIcon();
     getUpdates();
+    gotoPage('options.html');
 });
 
 //open options.html page on extension icon click
@@ -52,21 +71,10 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     gotoPage('options.html');
 });
 
-// sync extension settings since google cloud
-chrome.storage.sync.get('commentatorSettings', function(val) {
-    if (typeof val.commentatorSettings !== "undefined") {
-        localStorage.commentatorSettings = val.commentatorSettings;
-        localStorage.targets = val.targets;
-    } else {
-        initStorage();
-    }
-});
-
-// sync comments with local storage
-getUpdates();
 
 //get extension interval setting and run update callback on timeout
 function getUpdates() {
+    console.log('get updates');
     var isActive = getCommentatorSettings('isActive');
     if (isActive) {
         var targets = localStorage.targets.split('\n');
@@ -103,14 +111,20 @@ function getUpdates() {
 }
 
 function initStorage() {
+    console.log('initStorage');
     var commentatorSettings = {
             'isActive'          : true,
             'botToken'          : '384661304:AAHMZB7auyT0I-KTFHg1QDT9YpMmtC4-CqU',
             'tgUserId'          : '@barbarossa_95',
-            'interval'          : 1,
+            'interval'          : 0.2,
             'messageTemplate'   : 'Post: {{URL}} Сообщение: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.posts = "";
     localStorage.targets = "https://www.instagram.com/p/BWpKvR7BDMB";
+    localStorage.posts = "";
+    chrome.storage.sync.set({
+        'commentatorSettings'   : localStorage.commentatorSettings,
+        'targets'               : localStorage.targets,
+        'posts'                 : localStorage.posts
+    }, function() {});
 }
