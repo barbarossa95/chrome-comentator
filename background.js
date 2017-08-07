@@ -8,14 +8,14 @@ FB.init({
 function initStorage() {
     var commentatorSettings = {
             'isActive'          : false,
-            'botToken'          : '',
-            'tgUserId'          : '',
+            'botToken'          : null,
+            'tgUserId'          : null,
             'interval'          : 1,
-            'messageTemplate'   : 'Post: {{URL}} Your message: {{MESSAGE}}'
+            'messageTemplate'   : 'Post: {{URL}} Message: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.targets = "";
-    localStorage.posts = "";
+    localStorage.targets = null;
+    localStorage.posts = '';
     localStorage.requestCounter = 0;
     chrome.storage.sync.set({
         'commentatorSettings'   : localStorage.commentatorSettings,
@@ -68,7 +68,6 @@ function onInstalled() {
 }
 
 function onStartup() {
-    getTelegramChatId();
     // sync extension settings since google cloud
     chrome.storage.sync.get('commentatorSettings', function(val) {
         if (typeof val.commentatorSettings !== "undefined" 
@@ -79,9 +78,10 @@ function onStartup() {
         } else {
             initStorage();
         }
+        getTelegramChatId();
+        setCommentatorIcon();
+        getUpdates();
     });
-    setCommentatorIcon();
-    getUpdates();
 };
 
 chrome.runtime.onInstalled.addListener(onInstalled);

@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $('#btn-save').click(function() {
         save();
-        alert('The configuration has been saved!');
+        notify("Commentator", "The configuration has been saved!");
     });
 
     $('#btn-switch').click(function() {
