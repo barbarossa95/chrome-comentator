@@ -6,14 +6,19 @@
         });
 
 function setCommentatorIcon() {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
+    var isActive = JSON.parse(localStorage.commentatorSettings).isActive;
     var icon = {
-        path: "images/comment-off.png",
+        path    : 'images/comment-off.png',
     };
-    if (commentatorSettings['isActive']) {
+    var title = {
+        title   : 'Commentator stoped'
+    };
+    if (isActive) {
         icon["path"]="images/comment.png";
+        title['title'] = 'Commentator is running';
     }
     chrome.browserAction.setIcon(icon);
+    chrome.browserAction.setTitle(title);
 }
 
 function gotoPage(url) {
@@ -39,7 +44,6 @@ chrome.runtime.onInstalled.addListener(function(details){
     initStorage();
     setCommentatorIcon();
     gotoPage('options.html');
-    // sync comments with local storage
     getUpdates();
 });
 
@@ -52,6 +56,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 chrome.storage.sync.get('commentatorSettings', function(val) {
     if (typeof val.commentatorSettings !== "undefined") {
         localStorage.commentatorSettings = val.commentatorSettings;
+        localStorage.targets = val.targets;
     } else {
         initStorage();
     }
@@ -62,13 +67,18 @@ getUpdates();
 
 //get extension interval setting and run update callback on timeout
 function getUpdates() {
-    var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-    if (commentatorSettings['isActive']) {
-        var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
-        var posts = localStorage.posts ? JSON.parse(localStorage.posts) : [] ;
-        var pages = commentatorSettings.targets.split('\n');
-        for (var i = pages.length - 1; i >= 0; i--) {
-            var url = pages[i];
+    var isActive = getCommentatorSettings('isActive');
+    if (isActive) {
+        var targets = localStorage.targets.split('\n');
+        for (var i = targets.length - 1; i >= 0; i--) {
+            var url = targets[i];
+            var site = '';
+            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
+                site = 'facebook';
+            }
+            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
+                site = 'instagram';
+            }
             post = getPostFromStorage(url);
             if (!post) {
                 post = {
@@ -78,32 +88,29 @@ function getUpdates() {
                     syncDate: null
                 }
             }
-            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
-                FacebookParser(post);
-                continue;
-            }
-            if (url.search('(?:(?:http|https):\/\/)?(?:www.)?(?:instagram.com|instagr.am)\/([A-Za-z0-9-_]+)') !== -1) {
-                InstagramParser(post);
-                continue;
+            switch (site) {
+                case 'facebook': FacebookParser(post); break;
+                case 'instagram': InstagramParser(post); break;
+                default: continue;
             }
         }
         setTimeout(function() {
-            notifyByTelegram();
+            notifyByTelegram(targets);
         }, 1000 * 30);
     }
-    var interval = 1000 * 60 * commentatorSettings.interval;
-    setTimeout(getUpdates, interval);
+    var interval = getCommentatorSettings('interval');
+    setTimeout(getUpdates, 1000 * 60 * interval);
 }
 
 function initStorage() {
     var commentatorSettings = {
             'isActive'          : true,
-            'targets'           : 'https://www.instagram.com/p/BWpKvR7BDMB',
-            'botToken'          : '401718482:AAGabhE9Vaf3lqiAWT1DP4-8OcyAsOQNm40',
-            'tgUserId'          : '@commentatorChannel',
+            'botToken'          : '384661304:AAHMZB7auyT0I-KTFHg1QDT9YpMmtC4-CqU',
+            'tgUserId'          : '@barbarossa_95',
             'interval'          : 1,
-            'messageTemplate'   : 'You have new comment: {{MESSAGE}}'
+            'messageTemplate'   : 'Post: {{URL}} Сообщение: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.posts = '';
+    localStorage.posts = "";
+    localStorage.targets = "https://www.instagram.com/p/BWpKvR7BDMB";
 }
