@@ -7,14 +7,14 @@ FB.init({
 
 function initStorage() {
     var commentatorSettings = {
-            'isActive'          : true,
-            'botToken'            : '384661304:AAHMZB7auyT0I-KTFHg1QDT9YpMmtC4-CqU',
-            'tgUserId'          : '@barbarossa_95',
-            'interval'          : 0.4,
-            'messageTemplate'   : 'Post: {{URL}} Сообщение: {{MESSAGE}}'
+            'isActive'          : false,
+            'botToken'          : '',
+            'tgUserId'          : '',
+            'interval'          : 1,
+            'messageTemplate'   : 'Post: {{URL}} Your message: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.targets = "https://www.instagram.com/p/BVh7lLSHS4U/?taken-by=greshilov.v";
+    localStorage.targets = "";
     localStorage.posts = "";
     localStorage.requestCounter = 0;
     chrome.storage.sync.set({
@@ -72,11 +72,10 @@ function onStartup() {
     // sync extension settings since google cloud
     chrome.storage.sync.get('commentatorSettings', function(val) {
         if (typeof val.commentatorSettings !== "undefined" 
-            && typeof val.targets !== "undefined"
-            && typeof val.posts !== "undefined") {
+            && typeof val.targets !== "undefined") {
             localStorage.commentatorSettings = val.commentatorSettings;
             localStorage.targets = val.targets;
-            localStorage.posts = val.posts;
+            localStorage.posts = val.posts || "";
         } else {
             initStorage();
         }
