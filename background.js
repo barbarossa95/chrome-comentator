@@ -14,7 +14,7 @@ function initStorage() {
             'messageTemplate'   : 'Post: {{URL}} Message: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
-    localStorage.targets = null;
+    localStorage.targets = '';
     localStorage.posts = '';
     localStorage.requestCounter = 0;
     chrome.storage.sync.set({
