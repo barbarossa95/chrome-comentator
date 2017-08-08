@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#btn-switch').click(function() {
         var isActive = getCommentatorSettings('isActive');
         editCommentatorSettings('isActive', !isActive);
-        setCommentatorIcon(!isActive);
+        setCommentatorIcon();
         $btnSwitch.html(isActive ? "Start" : "Stop");
         if (isActive) {
             notify("Commentator", "Commentator stoped.");
