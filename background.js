@@ -78,7 +78,6 @@ function onStartup() {
         } else {
             initStorage();
         }
-        getTelegramChatId();
         setCommentatorIcon();
         getUpdates();
     });

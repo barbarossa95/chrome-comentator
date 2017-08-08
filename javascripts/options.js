@@ -26,8 +26,6 @@ function save() {
         'targets'               : localStorage.targets,
         'posts'                 : localStorage.posts
     }, function() {});
-
-    getTelegramChatId();
 }
 
 
