@@ -6,7 +6,6 @@
 
     "background": {
         "scripts": [
-            "lib/facebook-sdk.js",
             "lib/helpers.js",
             "lib/instagram.js",
             "lib/facebook.js",
