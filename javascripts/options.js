@@ -13,7 +13,7 @@ function loadCommentatorInfo() {
 
 function save() {
     localStorage.targets = $('#targets').val() || "";
-    
+
     var commentatorSettings = JSON.parse(localStorage.commentatorSettings);
     commentatorSettings['botToken'] = $('#botToken').val() || "";
     commentatorSettings['tgUserId'] = $('#tgUserId').val() || "";
@@ -22,33 +22,25 @@ function save() {
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
     // sync settings to google cloud
     chrome.storage.sync.set({
-        'commentatorSettings'   : localStorage.settings,
+        'commentatorSettings'   : localStorage.commentatorSettings,
         'targets'               : localStorage.targets,
         'posts'                 : localStorage.posts
-    }, function() {});
+    }, function() {
+        notify("Commentator", "The configuration has been saved!");
+    });
 }
 
 
 document.addEventListener('DOMContentLoaded', function () {
     var isActive = getCommentatorSettings('isActive');
-    
+
     $btnSwitch = $('#btn-switch');
 
     $btnSwitch.val(isActive ? "Stop" : "Start");
 
-    $('#targets').bind('input propertychange', function() {
-        var targets = $('#targets').val();
-        targets = $('#targets').val() || "";
-        localStorage.targets = targets;
-        chrome.storage.sync.set({
-            'targets'                 : localStorage.targets
-    }, function() {});
-    });
+    $('#targets').bind('input propertychange', save);
 
-    $('#btn-save').click(function() {
-        save();
-        notify("Commentator", "The configuration has been saved!");
-    });
+    $('#btn-save').click(save);
 
     $('#btn-switch').click(function() {
         var isActive = getCommentatorSettings('isActive');
@@ -57,9 +49,9 @@ document.addEventListener('DOMContentLoaded', function () {
         $btnSwitch.html(isActive ? "Start" : "Stop");
         if (isActive) {
             notify("Commentator", "Commentator stoped.");
-            resetCounter();            
+            resetCounter();
         } else {
-            notify("Commentator", "Commentator started.");   
+            notify("Commentator", "Commentator started.");
         }
     });
 });
