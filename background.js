@@ -1,10 +1,3 @@
-FB.init({
-        appId            : '503342810008442',
-        autoLogAppEvents : true,
-        xfbml            : true,
-        version          : 'v2.10'
-    });
-
 function initStorage() {
     var commentatorSettings = {
             'isActive'          : false,
@@ -69,14 +62,14 @@ function onInstalled() {
 
 function onStartup() {
     // sync extension settings since google cloud
-    chrome.storage.sync.get('commentatorSettings', function(val) {
-        if (typeof val.commentatorSettings !== "undefined" 
+    chrome.storage.sync.get(['commentatorSettings', 'targets', 'posts'], function(val) {
+        if (typeof val.commentatorSettings !== "undefined"
             && typeof val.targets !== "undefined") {
             localStorage.commentatorSettings = val.commentatorSettings;
             localStorage.targets = val.targets;
             localStorage.posts = val.posts || "";
         } else {
-            initStorage();
+            //initStorage();
         }
         setCommentatorIcon();
         getUpdates();
