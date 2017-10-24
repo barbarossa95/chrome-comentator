@@ -69,7 +69,7 @@ function onStartup() {
             localStorage.targets = val.targets;
             localStorage.posts = val.posts || "";
         } else {
-            //initStorage();
+            initStorage();
         }
         setCommentatorIcon();
         getUpdates();
