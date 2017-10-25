@@ -26,7 +26,7 @@ function save() {
         'targets'               : localStorage.targets,
         'posts'                 : localStorage.posts
     }, function() {
-        notify("Commentator", "The configuration has been saved!");
+
     });
 }
 
@@ -38,9 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $btnSwitch.val(isActive ? "Stop" : "Start");
 
-    $('#targets').bind('input propertychange', save);
+    $('#targets').bind('input propertychange', function() { save(); });
 
-    $('#btn-save').click(save);
+    $('#btn-save').click(function() { save(); notify("Commentator", "The configuration has been saved!"); });
 
     $('#btn-switch').click(function() {
         var isActive = getCommentatorSettings('isActive');

@@ -1,8 +1,13 @@
 {
     "manifest_version": 2,
-    "name": "Commentator",
+    "name": "SpyCom",
     "version": "1.1.0",
-    "description": "Commentator chrome extension",
+    "description": "Спайк - это плагин, который следит за комментариями к рекламным постам в инстаграмме и фейсбуке и оповещает Вас о появлении новых в телеграмм!",
+	"icons": {
+       "128": "icons/128.png",
+       "64": "icons/64.png",
+       "32": "icons/32.png"
+  },
 
     "background": {
         "scripts": [
