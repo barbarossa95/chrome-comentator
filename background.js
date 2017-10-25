@@ -25,6 +25,7 @@ function getUpdates() {
         var targets = localStorage.targets.split('\n');
         for (var i = targets.length - 1; i >= 0; i--) {
             var url = getTargetUrl(targets[i]);
+            var label = getTargetLabel(targets[i]);
             var site = '';
             if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
                 site = 'facebook';
@@ -37,6 +38,7 @@ function getUpdates() {
                 post = {
                     id: 0,
                     url: url,
+                    label: label,
                     comments: null,
                     syncDate: null
                 }
@@ -47,9 +49,9 @@ function getUpdates() {
                 default: continue;
             }
         }
-        setTimeout(function() {
-            notifyByTelegram(targets);
-        }, 1000 * 60 * 0.1);
+        // setTimeout(function() {
+        //     //notifyByTelegram(targets);
+        // }, 1000 * 60 * 0.1);
     }
     var interval = getCommentatorSettings('interval');
     setTimeout(getUpdates, 1000 * 60 * interval);
