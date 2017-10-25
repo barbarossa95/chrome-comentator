@@ -4,7 +4,7 @@ function initStorage() {
             'botToken'          : null,
             'tgUserId'          : null,
             'interval'          : 1,
-            'messageTemplate'   : 'Post: {{URL}} Message: {{MESSAGE}}'
+            'messageTemplate'   : 'Post {{URL TAG}} (url: {{URL}}) Сообщение: {{MESSAGE}}'
     };
     localStorage.commentatorSettings = JSON.stringify(commentatorSettings);
     localStorage.targets = '';
@@ -24,7 +24,7 @@ function getUpdates() {
         increaseCounter();
         var targets = localStorage.targets.split('\n');
         for (var i = targets.length - 1; i >= 0; i--) {
-            var url = targets[i];
+            var url = getTargetUrl(targets[i]);
             var site = '';
             if (url.search('(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?') !== -1) {
                 site = 'facebook';
